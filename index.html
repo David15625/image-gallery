@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Upload Images</title>
+</head>
+<body>
+  <h1>Upload images</h1>
+  <form id="upload-form">
+    <input id="images" name="images" type="file" accept="image/*" multiple required>
+    <button type="submit">Upload</button>
+  </form>
+  <p id="status"></p>
+  <p><a href="/gallery">Open image gallery</a></p>
+
+  <script>
+    const form = document.getElementById("upload-form");
+    const status = document.getElementById("status");
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const files = document.getElementById("images").files;
+      if (!files.length) return;
+
+      const data = new FormData();
+      for (const file of files) data.append("images", file);
+
+      status.textContent = "Uploading...";
+      try {
+        const response = await fetch("/upload", { method: "POST", body: data });
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.error || "Upload failed");
+        status.textContent = `Uploaded ${result.uploaded} image(s).`;
+        form.reset();
+      } catch (error) {
+        status.textContent = error.message;
+      }
+    });
+  </script>
+</body>
+</html>

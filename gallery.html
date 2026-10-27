@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Image Gallery</title>
+</head>
+<body>
+  <h1>Image gallery</h1>
+  <p><a href="/">Upload more images</a></p>
+  <p id="status">Loading images...</p>
+  <div>
+    <button id="previous" type="button">Previous</button>
+    <span id="counter"></span>
+    <button id="next" type="button">Next</button>
+  </div>
+  <p><img id="image" alt="Gallery image" style="max-width: 100%; max-height: 75vh; object-fit: contain;"></p>
+
+  <script>
+    const image = document.getElementById("image");
+    const status = document.getElementById("status");
+    const counter = document.getElementById("counter");
+    let images = [];
+    let index = 0;
+    let touchStartX = 0;
+
+    function showImage() {
+      if (!images.length) {
+        image.removeAttribute("src");
+        counter.textContent = "";
+        status.textContent = "No images uploaded yet.";
+        return;
+      }
+      status.textContent = "";
+      image.src = images[index].url;
+      image.alt = images[index].name;
+      counter.textContent = `${index + 1} / ${images.length}`;
+    }
+
+    function move(step) {
+      if (!images.length) return;
+      index = (index + step + images.length) % images.length;
+      showImage();
+    }
+
+    document.getElementById("previous").addEventListener("click", () => move(-1));
+    document.getElementById("next").addEventListener("click", () => move(1));
+
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "ArrowLeft") move(-1);
+      if (event.key === "ArrowRight") move(1);
+    });
+
+    image.addEventListener("touchstart", (event) => {
+      touchStartX = event.changedTouches[0].screenX;
+    }, { passive: true });
+
+    image.addEventListener("touchend", (event) => {
+      const difference = event.changedTouches[0].screenX - touchStartX;
+      if (Math.abs(difference) > 40) move(difference < 0 ? 1 : -1);
+    }, { passive: true });
+
+    fetch("/api/images")
+      .then(response => {
+        if (!response.ok) throw new Error("Could not load gallery.");
+        return response.json();
+      })
+      .then(data => {
+        images = data;
+        showImage();
+      })
+      .catch(error => status.textContent = error.message);
+  </script>
+</body>
+</html>
