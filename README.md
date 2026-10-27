@@ -15,4 +15,3 @@ A minimal Node.js + HTML image upload site.
 - Maximum 10 MB per image.
 - Only files whose upload MIME type is `image/*` are accepted. This is a minimal check.
 - Anyone who can access the public site can upload images and view the gallery. Add authentication and stricter validation before sharing publicly.
-- Persistent storage and hosting are subject to Railway's current free-plan limits and pricing.
